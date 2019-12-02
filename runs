@@ -1,0 +1,1 @@
+run 1:  ./feedback -g 3 -r 6 -z 1.1 -b 0.1 -n 0.05 --seed=0 -o output -s 3 --width=1920 --height=1080

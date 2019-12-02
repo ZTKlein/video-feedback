@@ -4,12 +4,14 @@ CXXFLAGS	= -g -std=c++11
 
 #platform dependent variables
 ifeq ("$(shell uname)", "Darwin")
-  LDFLAGS     = -framework Foundation -framework GLUT -framework OpenGL -lOpenImageIO -lm
+  LDFLAGS     = -framework Foundation
 else
   ifeq ("$(shell uname)", "Linux")
-    LDFLAGS     = -L /usr/lib64/ -lglut -lGL -lGLU -lOpenImageIO -lm -lboost_program_options
+    LDFLAGS     = -L /usr/lib64/
   endif
 endif
+
+LDFLAGS += -lOpenImageIO -lm -lboost_program_options
 
 PROJECT = feedback
 
