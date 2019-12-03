@@ -32,6 +32,7 @@ Option descriptions:
 Files:
     feedback.cpp        Runs the simulation
     Makefile            Makefile for the project
+    runs                Run parameters I used for videos
 
 Make targets:
     all/default         compile the project

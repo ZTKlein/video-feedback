@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
   }
 
   writeFile();
-  while (true) {
+  while (frame < framelimit) {
     frame++;
     std::cout << "\rframe " << frame << std::flush;
     oldImage = image;

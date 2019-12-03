@@ -1,1 +1,6 @@
-run 1:  ./feedback -g 3 -r 6 -z 1.1 -b 0.1 -n 0.05 --seed=0 -o output -s 3 --width=1920 --height=1080
+./feedback -g 3 -r 6 -z 1.1 -b 0.1 -n 0.05 --seed=0 -o output -s 3 --width=1920 --height=1080
+
+./feedback --cds=1.471 --cdv=-1.305 --cdsv=0.331 --cd=-0.897 --seed=180838769 --rotate=160 --zoom=1.025 --gaussian=3 --blend=0.065 --sharp
+en=1.8 --width=1920 --height=1080 --limit=540
+
+./feedback -z 1.1 -n 0.3 --width=1920 --height=1080 --limit=300
