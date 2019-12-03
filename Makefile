@@ -1,6 +1,6 @@
 CC      = g++
 
-CXXFLAGS	= -g -std=c++11
+CXXFLAGS	= -std=c++11
 
 #platform dependent variables
 ifeq ("$(shell uname)", "Darwin")
@@ -17,6 +17,7 @@ PROJECT = feedback
 
 OBJECTS = feedback.o #image.o matrix.o
 
+all: CXXFLAGS += -g
 all: feedback
 
 o2: CXXFLAGS += -O2

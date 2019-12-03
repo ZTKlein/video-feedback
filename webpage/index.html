@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Feedback</title>
+    <link rel="stylesheet" href="pure-min.css" />
+    <link rel="stylesheet" href="index.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="pure-menu pure-menu-horizontal">
+      <a href="#" class="pure-menu-heading pure-menu-link">Video Feedback</a>
+      <ul class="pure-menu-list">
+        <li class="pure-menu-item">
+          <a href="#proposal" class="pure-menu-link">Proposal</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#process" class="pure-menu-link">Process</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#results" class="pure-menu-link">Results</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#future" class="pure-menu-link">Future</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#resources" class="pure-menu-link">Research & Inspiration</a>
+        </li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div id="proposal">
+        <h1>Video Feedback Loops</h1>
+        <h2>Zachary Klein</h2>
+        <h2>CPSC 4040</h2>
+        <p>
+          Video feedback occurs when you have a camera pointed at a screen, and
+          the camera is feeding into the screen. You can get some really
+          interesting effects by doing this.
+        </p>
+        <iframe
+          width="896"
+          height="504"
+          src="https://www.youtube-nocookie.com/embed/WS8v6jKPP68"
+          frameborder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <p>
+          None of that video above was generated using a computer. It's due to a
+          variety of effects, including the fact that there's latency between
+          the video capture and the display of the image. The two chase each
+          other. I got the idea to try simulating video feedback after seeing a
+          demo of this not too long ago, and that's my project -- a video
+          feedback simulator.
+        </p>
+      </div>
+      <div id="process">
+        <h1>The Process</h1>
+        <p>
+          To achieve a video feedback effect, I already had a general idea of
+          what I needed to do -- things such as rotating the image and zooming
+          in or out help to create those discrepancies between the video capture
+          and display. I also thought it would be beneficial to add other
+          things, such as blurring and sharpening, to try to replicate some of
+          the effects from using analog mediums instead of purely simulated
+          ones.
+        </p>
+        <p>
+          So, to start things off, I essentially took a lot of the code form
+          older projects in the course and had various effects in a loop, hoping
+          to generate a series of frames modifying a base image of generated
+          noise. Unfortunately, it turns out this was a pretty inefficient
+          process for a few reasons, one of the biggest ones being performance.
+          It took a long time to get enough frames to get an idea of what was
+          going on, and actually editing the process was tedious. To solve this,
+          I ended up rewriting the code to use OpenImageIO's libraries more
+          heavily, which gave access to a lot of optimizations, including
+          multithreading. At the same time, I reworked the pipeline -- now, I
+          had all the manipulation functions defined, and using Boost's Program
+          Options library, I set things up so that they would run based on a
+          series of command line options. With this, it was possible to edit the
+          order of effects just by rerunning the program, and it was a lot
+          simpler to add more options to the program. To make results
+          reproducible while testing, I also added a seed flag you could use to
+          seed the random generator. As of now, there's options to edit the
+          dimensions, output directory, frame limit, and seed for basic
+          parameterse on every run. The options I have for manipulations are
+          applying a gaussian blur where you specify the kernel size, sharpening
+          the image using an unsharpen mask, adding noise to each frame,
+          rotating the camera, zooming the camera, blending the previous frame
+          into the current one, and something called crawl. I got the idea for
+          the crawl effect from http://erleuchtet.org/2011/06/white-one.html, a
+          neat project I found while researching video feedback simulation.
+          Using the HSV color space, each pixel is essentially given a marching
+          value, and it grabs its new color from a space in that direction and
+          distance. It doesn't have a real world comparison, but it creates some
+          really interesting effects.
+        </p>
+      </div>
+      <div id="results">
+        <h1>The Results</h1>
+        <p>
+          There's a big reason I ended up adding more than just zooming and
+          rotating -- it's hard to keep a feedback loop going; they tend to
+          trend towards a stable state, which often means the screen goes blank.
+        </p>
+        <iframe
+          width="896"
+          height="504"
+          src="https://www.youtube-nocookie.com/embed/06_eT0_cX80"
+          frameborder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <p>
+          One of the things you do to prevent this is occasionally or
+          continually add new artifacts into the feedback loop. In real life you
+          might do this by temporarily changing display settings, shaking the
+          camera, or moving an object between the camera and screen. A rather
+          effective way to keep things going digitally, however, is simply
+          adding noise every frame (which is also present in some real life
+          feedback setups, due to limitations and imperfections in hardware and
+          the environment). This next video uses only a small zoom factor and
+          noise varying from -0.3-0.3 variance to generate the effects shown.
+        </p>
+        <iframe
+          width="896"
+          height="504"
+          src="https://www.youtube-nocookie.com/embed/Sk51roKBJiw"
+          frameborder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <p>
+          Results can vary a great deal based on the inputs and order of them;
+          this video was made by combining most of the options.
+        </p>
+        <iframe
+          width="896"
+          height="504"
+          src="https://www.youtube-nocookie.com/embed/Xy9vhPeVFgA"
+          frameborder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <p>
+          And of course, one of my favorite effects was adding the crawl. It
+          took a while to get this working right, but this effect goes a decent
+          way towards keeping a simulation from stopping out as well as
+          generating a lot of different effects. The HSV crawling leads to some
+          more dynamic visualizations.
+        </p>
+        <iframe
+          width="896"
+          height="504"
+          src="https://www.youtube-nocookie.com/embed/0bjNbvWul78"
+          frameborder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div id="future">
+        <h1>Future Improvements</h1>
+        <p>
+          In the future, I'd like to work on adding more features; there's a lot
+          of possible effects. Some things off the top of my head are other
+          methods of blending, some form of histogram equalization to prevent
+          simulations from getting too bright or too dark, and more options for
+          noise. Some other neat features would be randomly generated runs and
+          the ability to use manipulations more than once in a simulation
+          pipeline. I'm also interested in rewriting the code so that it's GPU
+          accelerated; I think ideally I get the manipulations running as GLSL
+          shaders -- then I'd be able to even embed this in a webpage using
+          WebGL, which would make it a lot easier to add interactive controls.
+          Along with this, I believe this would make it easier to have an
+          interactive pipeline that you can edit while it runs.
+        </p>
+      </div>
+      <div id="resources">
+        <h1>Research, Inspiration, and Cool Stuff</h1>
+        <ul>
+          <li>
+            <a href="http://erleuchtet.org/2011/06/white-one.html">
+              The White One Demo</a
+            >
+            -- Found this while looking into the possibility of writing GPU
+            shaders to do the heavy lifting. If you have time, I strongly
+            recommend checking this link out -- this person wrote a 4 kilobyte
+            demo that runs realtime and visually blows what I did out of the
+            water. I seriously want to recreate the opening to that video at
+            some point.
+          </li>
+          <li>
+            <a
+              href="https://softologyblog.wordpress.com/category/video-feedback/"
+            >
+              Softology Blog</a
+            >
+            -- There's a lot about simulating video feedback here using a
+            program called Visions of Chaos (it simulates a lot of other stuff,
+            too). This is where I got the ideas for trying a lot of these
+            effects. I actually toyed around with the software for a bit to get
+            an idea of what I should be trying to achieve; I've got no clue how
+            the stuff works behind the scenes, but the interface is what gave me
+            the idea for using a dynamic pipeline for transformations.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

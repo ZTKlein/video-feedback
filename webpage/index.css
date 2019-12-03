@@ -1,0 +1,23 @@
+.pure-menu {
+  top: 0;
+  position: sticky;
+  background: #2d2d2d;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.sections {
+  width: 65%;
+  margin: 0 auto;
+}
+
+.sections > div {
+  margin: 0 auto;
+  text-align: center;
+}
+.sections > div > p {
+  text-align: left;
+}
+
+html {
+  font-family: Roboto;
+}
