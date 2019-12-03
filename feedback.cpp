@@ -2,6 +2,7 @@
 #include <random>
 #include <string>
 
+#include <OpenImageIO/color.h>
 #include <OpenImageIO/imagebuf.h>
 #include <OpenImageIO/imagebufalgo.h>
 #include <OpenImageIO/imageio.h>
@@ -34,6 +35,10 @@ float rotate;            // degrees to rotate camera
 float zoom;              // zoom in/out
 float blend;             // weight the old image when blending
 int framelimit;          // when to stop
+float cds;               // crawl parameters
+float cdv;
+float cdsv;
+float cd;
 
 // output directory
 std::string outdir = "";
@@ -90,6 +95,79 @@ void applyBlend() {
   ImageBufAlgo::mul(oldImage, oldImage, blend);
   image = ImageBufAlgo::add(image, oldImage);
 }
+void applyCrawl() {
+
+  std::vector<float> pixels(width * height * 3);
+  image.get_pixels({0, width, 0, height}, TypeDesc::FLOAT, &pixels[0]);
+  std::vector<float> pixels2 = pixels;
+  int basepos, crawlx, crawly, newx, newy, newbase;
+  float angle, dist;
+  float red, green, blue;
+  float maxc, minc, delta;
+  float h, s, v;
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      basepos = 3 * (y * width + x);
+      red = pixels2[basepos];
+      green = pixels2[basepos + 1];
+      blue = pixels2[basepos + 2];
+
+      maxc = std::max(std::max(red, green), blue);
+      minc = std::min(std::min(red, green), blue);
+
+      v = maxc; // value is maximum of r, g, b
+
+      if (maxc == 0) { // saturation and hue 0 if value is 0
+        s = 0;
+        h = 0;
+      } else {
+        s = (maxc - minc) / maxc; // saturation is color purity on scale 0 - 1
+
+        delta = maxc - minc;
+        if (delta == 0) // hue doesn't matter if saturation is 0
+          h = 0;
+        else {
+          if (red == maxc) // otherwise, determine hue on scale 0 - 360
+            h = (green - blue) / delta;
+          else if (green == maxc)
+            h = 2.0 + (blue - red) / delta;
+          else // (blue == maxc)
+            h = 4.0 + (red - green) / delta;
+          h = h * 60.0;
+          if (h < 0)
+            h = h + 360.0;
+        }
+      }
+
+      angle = 2.0 * pi * h;
+      dist = cds * s + cdv * v + cdsv * s * v + cd;
+
+      crawlx = dist * cos(angle);
+      crawly = dist * sin(angle);
+      newx = x + crawlx;
+      newy = y + crawly;
+      if (newx < 0)
+        newx = newx % width + width;
+      else if (newx >= width)
+        newx = newx % (width - 1);
+      if (newy < 0)
+        newy = height - newy;
+      if (newy >= height)
+        newy = newy % (height - 1);
+      newbase = 3 * (newy * width + x);
+      if (basepos > width * height * 3 || newbase > width * height * 3) {
+        std::cout << width * height * 3 << " " << basepos << " " << newbase
+                  << " " << newx << " " << newy << std::endl;
+      }
+
+      pixels[basepos] = pixels2[newbase];
+      pixels[basepos + 1] = pixels2[newbase + 1];
+      pixels[basepos + 2] = pixels2[newbase + 2];
+    }
+  }
+
+  image.set_pixels({0, width, 0, height}, TypeDesc::FLOAT, &pixels[0]);
+}
 
 void addGaussian(int k) {
   operations.push_back(applyGaussian);
@@ -103,6 +181,7 @@ void addRotate(float r) {
 }
 void addZoom(float z) { operations.push_back(applyZoom); }
 void addBlend(float b) { operations.push_back(applyBlend); }
+void addCrawl(float cds) { operations.push_back(applyCrawl); }
 
 int main(int argc, char *argv[]) {
 
@@ -119,8 +198,9 @@ int main(int argc, char *argv[]) {
       ("width", po::value<int>(&width)->default_value(500),
        "Width of display") //
       ("height", po::value<int>(&height)->default_value(300),
-       "Height of display")                                                  //
-      ("outdir,o", po::value<std::string>(&outdir), "Output file directory") //
+       "Height of display") //
+      ("outdir,o", po::value<std::string>(&outdir)->default_value("output"),
+       "Output file directory") //
       ("limit", po::value<int>(&framelimit)->default_value(300),
        "Frame limit") //
       ("gaussian,g", po::value<int>()->default_value(3)->notifier(addGaussian),
@@ -136,7 +216,15 @@ int main(int argc, char *argv[]) {
       ("zoom,z", po::value<float>(&zoom)->notifier(addZoom),
        "Zoom the camera") //
       ("blend,b", po::value<float>(&blend)->notifier(addBlend),
-       "Weight for blending in the last frame");
+       "Weight for blending in the last frame") //
+      ("cds", po::value<float>(&cds)->notifier(addCrawl),
+       "ds for \"crawl\"; must use with cdv, cdsv, and cd") //
+      ("cdv", po::value<float>(&cdv),
+       "dv for \"crawl\"; must use with cds, cdsv, and cd") //
+      ("cdsv", po::value<float>(&cdsv),
+       "dsv for \"crawl\"; must use with cds, cv, and cd") //
+      ("cd", po::value<float>(&cd),
+       "d for \"crawl\"; must use with cds, cdv, and cdsv");
 
   po::variables_map vm;
   auto parsed = po::parse_command_line(argc, argv, desc);
@@ -151,6 +239,7 @@ int main(int argc, char *argv[]) {
   desc.find("width", false).semantic()->notify(vm["width"].value());
   desc.find("height", false).semantic()->notify(vm["height"].value());
   desc.find("limit", false).semantic()->notify(vm["limit"].value());
+  desc.find("outdir", false).semantic()->notify(vm["outdir"].value());
 
   // start with an image of uniform
   iparams = ImageSpec(width, height, 3, TypeDesc::FLOAT);
