@@ -1,0 +1,73 @@
+Zachary Klein
+CPSC 4040
+Final Project:  Video Feedback Simulation
+
+Description:
+    Running feedback will apply the specified manipulations in order that they
+    are passed. To ensure reproducability, one of the options you can specify
+    is the seed used for random generation. When run, it will create images of
+    each frame.
+
+Limitations:
+    I ended up not using any libraries for GPU accelration, so runtimes can be
+    slow.
+    Currently each option can only be passed once. This is a limitation of
+    boost program options; there's probably a workaround but I didn't think it
+    important to allow multiple uses of the same manipulation to create
+    interesting effects.
+
+Option descriptions:
+    seed                Seeds the random generator
+    width/height        Set dimensions
+    outdir/o            Specify the directory for image output.
+    limit               Stops making frames when limit is reached.
+    gaussian            Apply a gaussian blur
+    sharpen             Apply an unsharpen mask
+    noise               Continuously add noise to the results
+    rotate              Set a camera rotation
+    zoom                Set the zoom factor
+    blend               Blend in the previous frame (uses average)
+    crawl options       This doesn't have a real-life 
+
+Files:
+    feedback.cpp        Runs the simulation
+    Makefile            Makefile for the project
+
+Make targets:
+    all/default         compile the project
+    feedback            compile the project
+    o2                  compile with the -o2 flag and without -g
+    clean               remove object files and executables from the directory
+    Video               use ffmpeg to turn images in output folder into a video
+
+Usage:
+to run:
+    ./feedback [options]
+
+Options:
+  -h [ --help ]                 Display help message
+  --seed arg (=514941802)       Seed for random generator
+  --width arg (=500)            Width of display
+  --height arg (=300)           Height of display
+  -o [ --outdir ] arg (=output) Output file directory
+  --limit arg (=300)            Frame limit
+  -g [ --gaussian ] arg (=3)    Apply a gaussian blur of specified kernel size
+  -s [ --sharpen ] arg (=1)     Pass in the contrast value to sharpen the 
+                                image. Uses an unsharpen mask with a 3x3 
+                                gaussian kernel.
+  -n [ --noise ] arg            Add noise to each frame, in the range [-n,n]
+  -r [ --rotate ] arg           Rotate the camera
+  -z [ --zoom ] arg             Zoom the camera
+  -b [ --blend ] arg            Weight for blending in the last frame
+  --cds arg                     ds for "crawl"; must use with cdv, cdsv, and cd
+  --cdv arg                     dv for "crawl"; must use with cds, cdsv, and cd
+  --cdsv arg                    dsv for "crawl"; must use with cds, cv, and cd
+  --cd arg                      d for "crawl"; must use with cds, cdv, and cdsv
+
+known issues: none
+notes:
+    Before applying a perspective warp a transform is applied
+        to avoid negative values
+    The image is always placed back with minimum values at 0, 0. This means
+        translations don't have a notable effect on end results.
+    The top left of the image is treated as the origin.

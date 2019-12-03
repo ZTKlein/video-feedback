@@ -30,3 +30,6 @@ ${PROJECT} : ${OBJECTS}
 
 clean:
 	rm -f core.* *.o *~ ${PROJECT}
+
+video:
+	ffmpeg -r 20 -f image2 -s 1920x1080 -i output/frame%d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p vid.mp4
