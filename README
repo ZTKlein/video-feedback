@@ -9,7 +9,7 @@ Description:
     each frame.
 
 Limitations:
-    I ended up not using any libraries for GPU accelration, so runtimes can be
+    I ended up not using any libraries for GPU acceleration, so runtimes can be
     slow.
     Currently each option can only be passed once. This is a limitation of
     boost program options; there's probably a workaround but I didn't think it
